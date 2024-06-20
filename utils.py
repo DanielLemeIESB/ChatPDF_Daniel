@@ -17,7 +17,7 @@ from dotenv import load_dotenv, find_dotenv
 from configs import *
 
 # URL do arquivo JSON no Google Drive
-gdrive_url = 'https://drive.google.com/uc?id=1HNepMO6p9uWXVywiBrX5dQdy0vJQcVn_'
+gdrive_url = 'https://drive.google.com/file/d/1HNepMO6p9uWXVywiBrX5dQdy0vJQcVn_/view?usp=drive_link'
 
 # Caminho temporário para salvar o arquivo JSON
 temp_json_path = '/tmp/config_api_keys.json'
