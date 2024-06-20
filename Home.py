@@ -1,12 +1,16 @@
 import streamlit as st
 import tempfile
 import os
+from pathlib import Path
 from utils import cria_chain_conversa, PASTA_ARQUIVOS
+
+# Certifique-se de que PASTA_ARQUIVOS é um objeto Path
+PASTA_ARQUIVOS = Path(PASTA_ARQUIVOS)
 
 def sidebar():
     uploaded_pdfs = st.file_uploader(
         'Adicione seus arquivos pdf', 
-        type=['.pdf'], 
+        type=['pdf'], 
         accept_multiple_files=True
     )
     
@@ -14,6 +18,10 @@ def sidebar():
     temp_files = []
 
     if uploaded_pdfs is not None:
+        # Criar a pasta PASTA_ARQUIVOS se ela não existir
+        if not PASTA_ARQUIVOS.exists():
+            PASTA_ARQUIVOS.mkdir(parents=True, exist_ok=True)
+
         # Limpar arquivos PDF anteriores na pasta de armazenamento
         for arquivo in PASTA_ARQUIVOS.glob('*.pdf'):
             arquivo.unlink()
