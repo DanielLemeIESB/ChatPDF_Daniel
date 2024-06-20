@@ -99,34 +99,3 @@ def cria_chain_conversa():
     )
 
     st.session_state['chain'] = chat_chain
-
-def sidebar():
-    uploaded_pdfs = st.file_uploader(
-        'Adicione seus arquivos pdf', 
-        type=['pdf'], 
-        accept_multiple_files=True
-    )
-    
-    if uploaded_pdfs is not None:
-        # Limpar arquivos PDF anteriores na pasta de armazenamento
-        for arquivo in PASTA_ARQUIVOS.glob('*.pdf'):
-            arquivo.unlink()
-        
-        # Salvar arquivos PDF carregados
-        for pdf in uploaded_pdfs:
-            with open(PASTA_ARQUIVOS / pdf.name, 'wb') as f:
-                f.write(pdf.read())
-    
-    label_botao = 'Inicializar ChatBot'
-    if 'chain' in st.session_state:
-        label_botao = 'Atualizar ChatBot'
-    if st.button(label_botao, use_container_width=True):
-        if len(list(PASTA_ARQUIVOS.glob('*.pdf'))) == 0:
-            st.error('Adicione arquivos .pdf para inicializar o chatbot')
-        else:
-            st.success('Inicializando o ChatBot...')
-            cria_chain_conversa()
-            st.rerun()
-
-def chat_window():
-    st.header('
