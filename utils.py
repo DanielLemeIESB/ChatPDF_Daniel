@@ -11,6 +11,7 @@ from langchain_openai.chat_models import ChatOpenAI
 import gdown
 import json
 import os
+import sys
 from dotenv import load_dotenv, find_dotenv
 
 from configs import *
@@ -21,8 +22,23 @@ gdrive_url = 'https://drive.google.com/uc?id=1HNepMO6p9uWXVywiBrX5dQdy0vJQcVn_'
 # Caminho temporário para salvar o arquivo JSON
 temp_json_path = '/tmp/config_api_keys.json'
 
-# Baixar o arquivo JSON do Google Drive
-gdown.download(gdrive_url, temp_json_path, quiet=True)
+# Função para suprimir a saída padrão
+class SuppressStdoutStderr:
+    def __enter__(self):
+        self.stdout = sys.stdout
+        self.stderr = sys.stderr
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        sys.stdout.close()
+        sys.stderr.close()
+        sys.stdout = self.stdout
+        sys.stderr = self.stderr
+
+# Baixar o arquivo JSON do Google Drive suprimindo a saída padrão
+with SuppressStdoutStderr():
+    gdown.download(gdrive_url, temp_json_path, quiet=True)
 
 # Verificar se o arquivo foi baixado e se ele é JSON válido
 try:
