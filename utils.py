@@ -16,10 +16,10 @@ from dotenv import load_dotenv, find_dotenv
 from configs import *
 
 # URL do arquivo JSON no Google Drive
-gdrive_url = 'https://drive.google.com/file/d/1oTfj9BCKxPtowyRHADsdHagQBfGsiisb/view?usp=drive_link'
+gdrive_url = 'https://drive.google.com/uc?id=1HNepMO6p9uWXVywiBrX5dQdy0vJQcVn_'
 
 # Caminho temporário para salvar o arquivo JSON
-temp_json_path = '/tmp/api_key.json'
+temp_json_path = '/tmp/config_api_keys.json'
 
 # Baixar o arquivo JSON do Google Drive
 gdown.download(gdrive_url, temp_json_path, quiet=True)
@@ -28,7 +28,7 @@ gdown.download(gdrive_url, temp_json_path, quiet=True)
 try:
     with open(temp_json_path, 'r') as f:
         data = json.load(f)
-        api_key = data['OPENAI_API_KEY']
+        api_key = data['openai_api_key']
 except json.JSONDecodeError:
     st.error("O arquivo baixado não é um JSON válido. Verifique a URL do Google Drive e o conteúdo do arquivo.")
     st.stop()
@@ -129,37 +129,4 @@ def sidebar():
             st.rerun()
 
 def chat_window():
-    st.header('🤖 Bem-vindo ao Chat com PDFs do Daniel', divider=True)
-
-    if 'chain' not in st.session_state:
-        st.error('Faça o upload de PDFs para começar!')
-        st.stop()
-    
-    chain = st.session_state['chain']
-    memory = chain.memory
-
-    mensagens = memory.load_memory_variables({})['chat_history']
-
-    container = st.container()
-    for mensagem in mensagens:
-        chat = container.chat_message(mensagem.type)
-        chat.markdown(mensagem.content)
-
-    nova_mensagem = st.chat_input('Converse com seus documentos...')
-    if nova_mensagem:
-        chat = container.chat_message('human')
-        chat.markdown(nova_mensagem)
-        chat = container.chat_message('ai')
-        chat.markdown('Gerando resposta')
-
-        resposta = chain.invoke({'question': nova_mensagem})
-        st.session_state['ultima_resposta'] = resposta
-        st.rerun()
-
-def main():
-    with st.sidebar:
-        sidebar()
-    chat_window()
-
-if __name__ == '__main__':
-    main()
+    st.header('
