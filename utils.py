@@ -12,6 +12,7 @@ import gdown
 import json
 import os
 import sys
+import requests  # Adicionando a importação do requests
 from dotenv import load_dotenv, find_dotenv
 
 from configs import *
