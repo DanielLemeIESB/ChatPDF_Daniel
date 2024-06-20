@@ -1,23 +1,33 @@
-import time
-
 import streamlit as st
-
+import tempfile
+import os
 from utils import cria_chain_conversa, PASTA_ARQUIVOS
-
 
 def sidebar():
     uploaded_pdfs = st.file_uploader(
         'Adicione seus arquivos pdf', 
         type=['.pdf'], 
         accept_multiple_files=True
-        )
-    if not uploaded_pdfs is None:
+    )
+    
+    # Lista para armazenar os caminhos dos arquivos temporários
+    temp_files = []
+
+    if uploaded_pdfs is not None:
+        # Limpar arquivos PDF anteriores na pasta de armazenamento
         for arquivo in PASTA_ARQUIVOS.glob('*.pdf'):
             arquivo.unlink()
+        
+        # Salvar arquivos PDF temporariamente
         for pdf in uploaded_pdfs:
-            with open(PASTA_ARQUIVOS / pdf.name, 'wb') as f:
-                f.write(pdf.read())
-    
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                temp_file.write(pdf.read())
+                temp_file_path = temp_file.name
+                temp_files.append(temp_file_path)
+                # Copiar o arquivo temporário para a PASTA_ARQUIVOS
+                with open(PASTA_ARQUIVOS / pdf.name, 'wb') as f:
+                    f.write(open(temp_file_path, 'rb').read())
+        
     label_botao = 'Inicializar ChatBot'
     if 'chain' in st.session_state:
         label_botao = 'Atualizar ChatBot'
@@ -28,12 +38,15 @@ def sidebar():
             st.success('Inicializando o ChatBot...')
             cria_chain_conversa()
             st.rerun()
-
+        
+        # Excluir arquivos temporários após o processamento
+        for temp_file_path in temp_files:
+            os.remove(temp_file_path)
 
 def chat_window():
     st.header('🤖 Bem-vindo ao Chat com PDFs do Daniel', divider=True)
 
-    if not 'chain' in st.session_state:
+    if 'chain' not in st.session_state:
         st.error('Faça o upload de PDFs para começar!')
         st.stop()
     
@@ -57,15 +70,6 @@ def chat_window():
         resposta = chain.invoke({'question': nova_mensagem})
         st.session_state['ultima_resposta'] = resposta
         st.rerun()
-
-
-
-
-
-
-
-
-
 
 def main():
     with st.sidebar:
