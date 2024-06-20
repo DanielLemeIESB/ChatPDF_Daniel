@@ -22,12 +22,19 @@ gdrive_url = 'https://drive.google.com/file/d/1oTfj9BCKxPtowyRHADsdHagQBfGsiisb/
 temp_json_path = '/tmp/api_key.json'
 
 # Baixar o arquivo JSON do Google Drive
-gdown.download(gdrive_url, temp_json_path, quiet=True)  # Use quiet=True para evitar escrever no stderr
+gdown.download(gdrive_url, temp_json_path, quiet=True)
 
-# Ler a chave da API do arquivo JSON
-with open(temp_json_path, 'r') as f:
-    data = json.load(f)
-    api_key = data['OPENAI_API_KEY']
+# Verificar se o arquivo foi baixado e se ele é JSON válido
+try:
+    with open(temp_json_path, 'r') as f:
+        data = json.load(f)
+        api_key = data['OPENAI_API_KEY']
+except json.JSONDecodeError:
+    st.error("O arquivo baixado não é um JSON válido. Verifique a URL do Google Drive e o conteúdo do arquivo.")
+    st.stop()
+except FileNotFoundError:
+    st.error("O arquivo JSON não foi encontrado. Verifique se o download foi bem-sucedido.")
+    st.stop()
 
 # Definir a variável de ambiente com a chave da API
 os.environ['OPENAI_API_KEY'] = api_key
