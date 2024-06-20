@@ -11,6 +11,7 @@ from langchain_openai.chat_models import ChatOpenAI
 import gdown
 import json
 import os
+import requests
 import sys
 from dotenv import load_dotenv, find_dotenv
 
@@ -22,41 +23,47 @@ gdrive_url = 'https://drive.google.com/uc?id=1HNepMO6p9uWXVywiBrX5dQdy0vJQcVn_'
 # Caminho temporário para salvar o arquivo JSON
 temp_json_path = '/tmp/config_api_keys.json'
 
-# Função para suprimir a saída padrão
-class SuppressStdoutStderr:
-    def __enter__(self):
-        self.stdout = sys.stdout
-        self.stderr = sys.stderr
-        sys.stdout = open(os.devnull, 'w')
-        sys.stderr = open(os.devnull, 'w')
-    
-    def __exit__(self, exc_type, exc_value, traceback):
-        sys.stdout.close()
-        sys.stderr.close()
-        sys.stdout = self.stdout
-        sys.stderr = self.stderr
+# Verificação de URL e Download
+response = requests.get(gdrive_url)
+if response.status_code == 200:
+    # Função para suprimir a saída padrão
+    class SuppressStdoutStderr:
+        def __enter__(self):
+            self.stdout = sys.stdout
+            self.stderr = sys.stderr
+            sys.stdout = open(os.devnull, 'w')
+            sys.stderr = open(os.devnull, 'w')
+        
+        def __exit__(self, exc_type, exc_value, traceback):
+            sys.stdout.close()
+            sys.stderr.close()
+            sys.stdout = self.stdout
+            sys.stderr = self.stderr
 
-# Baixar o arquivo JSON do Google Drive suprimindo a saída padrão
-with SuppressStdoutStderr():
-    gdown.download(gdrive_url, temp_json_path, quiet=True)
+    # Baixar o arquivo JSON do Google Drive suprimindo a saída padrão
+    with SuppressStdoutStderr():
+        gdown.download(gdrive_url, temp_json_path, quiet=True)
 
-# Verificar se o arquivo foi baixado e se ele é JSON válido
-try:
-    with open(temp_json_path, 'r') as f:
-        data = json.load(f)
-        api_key = data['openai_api_key']
-except json.JSONDecodeError:
-    st.error("O arquivo baixado não é um JSON válido. Verifique a URL do Google Drive e o conteúdo do arquivo.")
+    # Verificar se o arquivo foi baixado e se ele é JSON válido
+    try:
+        with open(temp_json_path, 'r') as f:
+            data = json.load(f)
+            api_key = data['openai_api_key']
+    except json.JSONDecodeError:
+        st.error("O arquivo baixado não é um JSON válido. Verifique a URL do Google Drive e o conteúdo do arquivo.")
+        st.stop()
+    except FileNotFoundError:
+        st.error("O arquivo JSON não foi encontrado. Verifique se o download foi bem-sucedido.")
+        st.stop()
+
+    # Definir a variável de ambiente com a chave da API
+    os.environ['OPENAI_API_KEY'] = api_key
+
+    # Carregar variáveis de ambiente do arquivo .env
+    _ = load_dotenv(find_dotenv())
+else:
+    st.error("Não foi possível acessar a URL do Google Drive. Verifique se a URL está correta e acessível.")
     st.stop()
-except FileNotFoundError:
-    st.error("O arquivo JSON não foi encontrado. Verifique se o download foi bem-sucedido.")
-    st.stop()
-
-# Definir a variável de ambiente com a chave da API
-os.environ['OPENAI_API_KEY'] = api_key
-
-# Carregar variáveis de ambiente do arquivo .env
-_ = load_dotenv(find_dotenv())
 
 PASTA_ARQUIVOS = Path(__file__).parent / 'arquivos'
 
