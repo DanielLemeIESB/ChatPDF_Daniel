@@ -8,7 +8,6 @@ from utils import cria_chain_conversa, PASTA_ARQUIVOS
 PASTA_ARQUIVOS = Path(PASTA_ARQUIVOS)
 
 def sidebar():
-    st.sidebar.header("Home")
     uploaded_pdfs = st.file_uploader(
         'Adicione seus arquivos pdf', 
         type=['pdf'], 
